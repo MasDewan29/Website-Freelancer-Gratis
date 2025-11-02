@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProFreelance | Daftar Freelancer Profesional</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Poppins',sans-serif;
+  background:#0f0c29;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+canvas{
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  z-index:-1;
+  background:radial-gradient(circle at center,#302b63,#0f0c29);
+}
+.container{
+  background:rgba(255,255,255,0.93);
+  border-radius:25px;
+  padding:45px;
+  margin:80px auto;
+  width:95%;max-width:950px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.4);
+  animation:fadeSlide 1s ease;
+  backdrop-filter:blur(8px);
+}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(50px);}
+  to{opacity:1;transform:translateY(0);}
+}
+h1{
+  text-align:center;
+  font-size:2.1rem;
+  background:linear-gradient(90deg,#7b2ff7,#f107a3);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:25px;
+}
+form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+label{
+  font-weight:600;
+  color:#333;
+  font-size:0.9rem;
+}
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  border:1.5px solid #ccc;
+  border-radius:10px;
+  background:#f9f9f9;
+  transition:0.3s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#7b2ff7;
+  background:#fff;
+  box-shadow:0 0 10px rgba(123,47,247,0.25);
+}
+textarea{grid-column:span 2;resize:none;}
+button{
+  grid-column:span 2;
+  background:linear-gradient(90deg,#7b2ff7,#f107a3);
+  border:none;
+  color:white;
+  padding:15px;
+  border-radius:12px;
+  font-size:1rem;
+  font-weight:600;
+  transition:0.3s;
+  cursor:pointer;
+}
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 20px rgba(241,7,163,0.4);
+}
+.spinner{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(255,255,255,0.8);
+  justify-content:center;
+  align-items:center;
+  backdrop-filter:blur(4px);
+  z-index:999;
+}
+.spinner.active{display:flex;}
+.spinner div{
+  width:70px;height:70px;
+  border:6px solid #ccc;
+  border-top-color:#7b2ff7;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Popup */
+.popup{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  background:rgba(255,255,255,0.95);
+  padding:35px 45px;
+  border-radius:20px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.3);
+  text-align:center;
+  width:90%;max-width:420px;
+  opacity:0;
+  transition:0.4s ease;
+  backdrop-filter:blur(6px);
+  z-index:1000;
+}
+.popup.active{
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
+}
+.popup h3{
+  background:linear-gradient(90deg,#7b2ff7,#f107a3);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-size:1.6rem;
+  margin-bottom:10px;
+}
+.popup p{
+  font-size:0.95rem;
+  color:#333;
+}
+</style>
+</head>
+
+<body>
+<canvas id="particles"></canvas>
+<div class="container">
+  <h1>Formulir Pendaftaran Freelancer</h1>
+  <form id="freelanceForm">
+    <!-- 30 Input Form -->
+    <label>Nama Lengkap</label><input type="text" id="nama" required>
+    <label>Jenis Kelamin</label>
+    <select id="gender" required><option value="">Pilih</option><option>Laki-laki</option><option>Perempuan</option></select>
+    <label>Email</label><input type="email" id="email" required>
+    <label>Nomor Telepon</label><input type="tel" id="telepon" required>
+    <label>Alamat Lengkap</label><input type="text" id="alamat" required>
+    <label>Kota Domisili</label><input type="text" id="kota" required>
+    <label>Usia</label><input type="number" id="usia" required>
+    <label>Tanggal Lahir</label><input type="date" id="lahir" required>
+    <label>Pendidikan Terakhir</label><input type="text" id="pendidikan" required>
+    <label>Nama Sekolah / Kampus</label><input type="text" id="kampus">
+    <label>Keahlian Utama</label><input type="text" id="keahlian" required>
+    <label>Keahlian Tambahan</label><input type="text" id="keahlian2">
+    <label>Pengalaman (tahun)</label><input type="number" id="pengalaman">
+    <label>Posisi atau Peran Terakhir</label><input type="text" id="posisi">
+    <label>Bahasa yang Dikuasai</label><input type="text" id="bahasa">
+    <label>Instagram</label><input type="text" id="instagram">
+    <label>LinkedIn</label><input type="text" id="linkedin">
+    <label>Github / Behance</label><input type="text" id="portalsosmed">
+    <label>Portfolio (URL)</label><input type="text" id="portfolio">
+    <label>Bidang Freelance</label>
+    <select id="bidang"><option value="">Pilih Bidang</option><option>Desain Grafis</option><option>Penulisan</option><option>Web Development</option><option>Video Editing</option><option>UI/UX</option><option>Penerjemah</option><option>Marketing</option></select>
+    <label>Status Pekerjaan Saat Ini</label>
+    <select id="status"><option value="">Pilih</option><option>Mahasiswa</option><option>Freelancer Penuh Waktu</option><option>Karyawan</option><option>Pencari Kerja</option></select>
+    <label>Gaji / Fee yang Diharapkan</label><input type="text" id="gaji">
+    <label>Ketersediaan Waktu (jam/hari)</label><input type="text" id="waktu">
+    <label>Bersedia Bekerja Remote?</label><select id="remote"><option>Ya</option><option>Tidak</option></select>
+    <label>Perangkat yang Digunakan</label><input type="text" id="device">
+    <label>Software yang Dikuasai</label><input type="text" id="software">
+    <label>Apakah Pernah Bekerja Tim?</label><select id="tim"><option>Ya</option><option>Tidak</option></select>
+    <label>Motivasi Bergabung</label><textarea id="motivasi" rows="3"></textarea>
+    <label>Harapan kamu jika di terima di freelance ini</label><textarea id="harapan" rows="3"></textarea>
+    <button type="submit">Kirim Formulir</button>
+  </form>
+</div>
+
+<div class="spinner" id="spinner"><div></div></div>
+<div class="popup" id="popup">
+  <h3>Terima Kasih 🙏</h3>
+  <p>Data kamu sudah kami terima. Tim kami akan menghubungi kamu dalam 3 hari kerja melalui email. Jangan lupa pantau inbox kamu, ya!</p>
+</div>
+<audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.wav"></audio>
+
+<script>
+// ==== FIREBASE ====
+const firebaseConfig={
+  apiKey:"AIzaSyBhIE3pkMCIzx3L-T1EmT7DiZOP5ccaIlA",
+  authDomain:"frelance-f5aae.firebaseapp.com",
+  databaseURL:"https://frelance-f5aae-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId:"frelance-f5aae",
+  storageBucket:"frelance-f5aae.appspot.com",
+  messagingSenderId:"308289667959",
+  appId:"1:308289667959:web:19509db76d4d64470f5772",
+  measurementId:"G-PT9B0ETPFD"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+const form=document.getElementById('freelanceForm');
+const popup=document.getElementById('popup');
+const spinner=document.getElementById('spinner');
+const successSound=document.getElementById('successSound');
+
+form.addEventListener('submit',(e)=>{
+  e.preventDefault();
+  spinner.classList.add('active');
+
+  const data={};
+  Array.from(form.elements).forEach(el=>{
+    if(el.id)data[el.id]=el.value;
+  });
+  data.tanggal=new Date().toLocaleString();
+
+  db.ref("pendaftaranFreelance").push(data).then(()=>{
+    setTimeout(()=>{
+      spinner.classList.remove('active');
+      successSound.play();
+      popup.classList.add('active');
+      form.reset();
+      setTimeout(()=>popup.classList.remove('active'),4000);
+    },3500);
+  }).catch(err=>{
+    spinner.classList.remove('active');
+    alert("Gagal mengirim data: "+err);
+  });
+});
+
+// ==== ANIMASI PARTIKEL LATAR ====
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+let particles=[];
+class Particle{
+  constructor(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.size=Math.random()*3+1;
+    this.speedX=Math.random()*1-0.5;
+    this.speedY=Math.random()*1-0.5;
+    this.color=`rgba(255,255,255,${Math.random()*0.8})`;
+  }
+  update(){
+    this.x+=this.speedX;
+    this.y+=this.speedY;
+    if(this.x<0||this.x>canvas.width)this.speedX*=-1;
+    if(this.y<0||this.y>canvas.height)this.speedY*=-1;
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.fillStyle=this.color;
+    ctx.fill();
+  }
+}
+function initParticles(){
+  particles=[];
+  for(let i=0;i<70;i++){particles.push(new Particle());}
+}
+function animateParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<particles.length;i++){
+    particles[i].update();
+    particles[i].draw();
+  }
+  requestAnimationFrame(animateParticles);
+}
+window.addEventListener('resize',()=>{
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  initParticles();
+});
+initParticles();
+animateParticles();
+</script>
+</body>
+</html>
